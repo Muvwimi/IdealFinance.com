@@ -1,0 +1,31 @@
+{
+  "name": "ideal-finance-backend",
+  "version": "1.0.0",
+  "description": "Backend server for Ideal Finance microfinance platform",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js",
+    "install-deps": "npm install express cors bcrypt jsonwebtoken pg multer helmet express-rate-limit nodemon"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5",
+    "bcrypt": "^5.1.1",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.11.3",
+    "multer": "^1.4.5-lts.1",
+    "helmet": "^7.0.0",
+    "express-rate-limit": "^6.8.1",
+    "nodemon": "^3.0.1"
+  },
+  "keywords": [
+    "microfinance",
+    "lending",
+    "fintech",
+    "digital-lending",
+    "financial-services"
+  ],
+  "author": "Ideal Finance Team",
+  "license": "MIT"
+}

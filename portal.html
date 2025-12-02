@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Client Portal - Ideal Finance</title>
+    <meta name="description" content="Access your Ideal Finance account, apply for loans, manage payments, and track your financial progress.">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --bright-blue: #3b82f6;
+            --light-gray: #f8fafc;
+            --medium-gray: #64748b;
+            --success-green: #10b981;
+            --warning-amber: #f59e0b;
+            --error-red: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-gray);
+        }
+        
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .portal-container {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--bright-blue) 100%);
+            min-height: 100vh;
+        }
+        
+        .portal-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .portal-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.15);
+        }
+        
+        .form-input {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            border-color: var(--bright-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--bright-blue));
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .step-indicator {
+            display: flex;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            margin-right: 1rem;
+            position: relative;
+        }
+        
+        .step.active {
+            background: var(--bright-blue);
+            color: white;
+        }
+        
+        .step.completed {
+            background: var(--success-green);
+            color: white;
+        }
+        
+        .step:not(.active):not(.completed) {
+            background: #e2e8f0;
+            color: var(--medium-gray);
+        }
+        
+        .step-line {
+            flex: 1;
+            height: 2px;
+            background: #e2e8f0;
+            margin: 0 1rem;
+        }
+        
+        .step-line.completed {
+            background: var(--success-green);
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .loan-status {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-approved {
+            background: #d1fae5;
+            color: #059669;
+        }
+        
+        .status-rejected {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .status-active {
+            background: #dbeafe;
+            color: #2563eb;
+        }
+        
+        .payment-calendar {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 8px;
+            margin-top: 1rem;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day:hover {
+            background: #f1f5f9;
+        }
+        
+        .calendar-day.due {
+            background: #fef3c7;
+            color: #d97706;
+            font-weight: 600;
+        }
+        
+        .calendar-day.paid {
+            background: #d1fae5;
+            color: #059669;
+            font-weight: 600;
+        }
+        
+        .calendar-day.overdue {
+            background: #fee2e2;
+            color: #dc2626;
+            font-weight: 600;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e2e8f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--success-green), var(--bright-blue));
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <img src="resources/logo.png" alt="Ideal Finance" class="h-10 w-auto">
+                    <span class="ml-3 text-xl font-display font-semibold text-gray-900">Ideal Finance</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <a href="index.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Home</a>
+                    <a href="#" id="logout-btn" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="portal-container pt-16">
+        <div class="min-h-screen flex items-center justify-center p-4" id="auth-section">
+            <!-- Login/Register Card -->
+            <div class="portal-card w-full max-w-md p-8">
+                <div class="text-center mb-8">
+                    <h1 class="text-3xl font-display font-bold text-gray-900 mb-2">Client Portal</h1>
+                    <p class="text-gray-600">Access your account and manage your loans</p>
+                </div>
+                
+                <!-- Login Form -->
+                <div id="login-form">
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="login-email" class="form-input w-full" placeholder="Enter your email" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" id="login-password" class="form-input w-full" placeholder="Enter your password" required>
+                        </div>
+                        
+                        <button id="login-btn" class="w-full btn-primary text-white py-3 rounded-lg font-semibold">
+                            Sign In
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-600">Don't have an account?</p>
+                        <button id="show-register" class="text-blue-600 hover:text-blue-700 font-medium">Create Account</button>
+                    </div>
+                </div>
+                
+                <!-- Registration Form -->
+                <div id="register-form" class="hidden">
+                    <div class="space-y-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                <input type="text" id="register-firstname" class="form-input w-full" placeholder="First name" required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                <input type="text" id="register-lastname" class="form-input w-full" placeholder="Last name" required>
+                            </div>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                            <input type="email" id="register-email" class="form-input w-full" placeholder="Enter your email" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                            <input type="tel" id="register-phone" class="form-input w-full" placeholder="Enter your phone number">
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+                            <input type="password" id="register-password" class="form-input w-full" placeholder="Create a password" required>
+                        </div>
+                        
+                        <button id="register-btn" class="w-full btn-primary text-white py-3 rounded-lg font-semibold">
+                            Create Account
+                        </button>
+                    </div>
+                    
+                    <div class="mt-6 text-center">
+                        <p class="text-gray-600">Already have an account?</p>
+                        <button id="show-login" class="text-blue-600 hover:text-blue-700 font-medium">Sign In</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dashboard Section -->
+        <div id="dashboard-section" class="hidden min-h-screen p-6">
+            <div class="max-w-7xl mx-auto">
+                <!-- Welcome Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-display font-bold text-white mb-2">Welcome back, <span id="user-name">Client</span>!</h1>
+                    <p class="text-blue-100">Manage your loans and track your financial progress</p>
+                </div>
+
+                <!-- Quick Actions -->
+                <div class="grid md:grid-cols-3 gap-6 mb-8">
+                    <div class="dashboard-card text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Apply for Loan</h3>
+                        <p class="text-gray-600 mb-4">Start a new loan application</p>
+                        <button id="new-loan-btn" class="btn-primary text-white px-6 py-2 rounded-lg font-medium w-full">
+                            Apply Now
+                        </button>
+                    </div>
+                    
+                    <div class="dashboard-card text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 9V7a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2m2 4h10a2 2 0 002-2v-6a2 2 0 00-2-2H9a2 2 0 00-2 2v6a2 2 0 002 2zm7-5a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">Make Payment</h3>
+                        <p class="text-gray-600 mb-4">Pay your monthly installment</p>
+                        <button id="make-payment-btn" class="bg-green-600 hover:bg-green-700 text-white px-6 py-2 rounded-lg font-medium w-full">
+                            Pay Now
+                        </button>
+                    </div>
+                    
+                    <div class="dashboard-card text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-lg font-semibold text-gray-900 mb-2">View Reports</h3>
+                        <p class="text-gray-600 mb-4">Check your loan status</p>
+                        <button id="view-reports-btn" class="bg-purple-600 hover:bg-purple-700 text-white px-6 py-2 rounded-lg font-medium w-full">
+                            View Reports
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Loan Overview -->
+                <div class="grid lg:grid-cols-3 gap-8">
+                    <!-- Current Loans -->
+                    <div class="lg:col-span-2">
+                        <div class="dashboard-card">
+                            <h3 class="text-xl font-semibold text-gray-900 mb-6">Your Loans</h3>
+                            <div id="loans-list">
+                                <!-- Loans will be populated here -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Payment Calendar -->
+                    <div class="dashboard-card">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Payment Calendar</h3>
+                        <div class="text-center mb-4">
+                            <h4 class="text-lg font-medium text-gray-900" id="calendar-month">December 2024</h4>
+                        </div>
+                        <div class="grid grid-cols-7 gap-1 text-center text-sm text-gray-600 mb-2">
+                            <div>Sun</div>
+                            <div>Mon</div>
+                            <div>Tue</div>
+                            <div>Wed</div>
+                            <div>Thu</div>
+                            <div>Fri</div>
+                            <div>Sat</div>
+                        </div>
+                        <div id="payment-calendar" class="payment-calendar">
+                            <!-- Calendar will be populated here -->
+                        </div>
+                        <div class="mt-4 space-y-2">
+                            <div class="flex items-center text-sm">
+                                <div class="w-4 h-4 bg-green-200 rounded mr-2"></div>
+                                <span>Paid</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <div class="w-4 h-4 bg-yellow-200 rounded mr-2"></div>
+                                <span>Due</span>
+                            </div>
+                            <div class="flex items-center text-sm">
+                                <div class="w-4 h-4 bg-red-200 rounded mr-2"></div>
+                                <span>Overdue</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="dashboard-card mt-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Recent Activity</h3>
+                    <div id="recent-activity" class="space-y-4">
+                        <!-- Activity items will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Loan Application Modal -->
+        <div id="loan-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+                <div class="p-8">
+                    <div class="flex justify-between items-center mb-8">
+                        <h2 class="text-2xl font-display font-bold text-gray-900">Loan Application</h2>
+                        <button id="close-loan-modal" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+
+                    <!-- Step Indicator -->
+                    <div class="step-indicator">
+                        <div class="step active" id="step-1">1</div>
+                        <div class="step-line" id="line-1"></div>
+                        <div class="step" id="step-2">2</div>
+                        <div class="step-line" id="line-2"></div>
+                        <div class="step" id="step-3">3</div>
+                    </div>
+
+                    <!-- Step 1: Loan Details -->
+                    <div id="loan-step-1" class="loan-step">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Loan Details</h3>
+                        <div class="space-y-6">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Loan Amount (ZMW)</label>
+                                <input type="number" id="app-loan-amount" class="form-input w-full" placeholder="Enter loan amount" min="1000" max="50000" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Loan Term (months)</label>
+                                <select id="app-loan-term" class="form-input w-full" required>
+                                    <option value="">Select loan term</option>
+                                    <option value="6">6 months</option>
+                                    <option value="12">12 months</option>
+                                    <option value="18">18 months</option>
+                                    <option value="24">24 months</option>
+                                    <option value="36">36 months</option>
+                                    <option value="48">48 months</option>
+                                    <option value="60">60 months</option>
+                                </select>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Loan Purpose</label>
+                                <select id="app-loan-purpose" class="form-input w-full" required>
+                                    <option value="">Select purpose</option>
+                                    <option value="business-expansion">Business Expansion</option>
+                                    <option value="inventory">Purchase Inventory</option>
+                                    <option value="equipment">Equipment Purchase</option>
+                                    <option value="agriculture">Agricultural Inputs</option>
+                                    <option value="education">Education Fees</option>
+                                    <option value="emergency">Emergency Needs</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-end mt-8">
+                            <button id="next-step-1" class="btn-primary text-white px-8 py-2 rounded-lg font-semibold">
+                                Next Step
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 2: Personal Information -->
+                    <div id="loan-step-2" class="loan-step hidden">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Personal Information</h3>
+                        <div class="space-y-6">
+                            <div class="grid grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">First Name</label>
+                                    <input type="text" id="app-firstname" class="form-input w-full" required>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Last Name</label>
+                                    <input type="text" id="app-lastname" class="form-input w-full" required>
+                                </div>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                                <input type="email" id="app-email" class="form-input w-full" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
+                                <input type="tel" id="app-phone" class="form-input w-full" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Monthly Income (ZMW)</label>
+                                <input type="number" id="app-income" class="form-input w-full" required>
+                            </div>
+                            
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Business/Employment Type</label>
+                                <select id="app-employment" class="form-input w-full" required>
+                                    <option value="">Select type</option>
+                                    <option value="self-employed">Self Employed</option>
+                                    <option value="salaried">Salaried Employee</option>
+                                    <option value="business-owner">Business Owner</option>
+                                    <option value="farmer">Farmer</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between mt-8">
+                            <button id="prev-step-2" class="bg-gray-300 text-gray-700 px-8 py-2 rounded-lg font-semibold hover:bg-gray-400">
+                                Previous
+                            </button>
+                            <button id="next-step-2" class="btn-primary text-white px-8 py-2 rounded-lg font-semibold">
+                                Next Step
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Step 3: Review and Submit -->
+                    <div id="loan-step-3" class="loan-step hidden">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-6">Review and Submit</h3>
+                        <div class="bg-gray-50 rounded-lg p-6 mb-6">
+                            <h4 class="font-semibold text-gray-900 mb-4">Loan Summary</h4>
+                            <div class="space-y-2" id="loan-summary">
+                                <!-- Summary will be populated here -->
+                            </div>
+                        </div>
+                        
+                        <div class="space-y-4">
+                            <div class="flex items-start">
+                                <input type="checkbox" id="terms-agreement" class="mt-1 mr-3" required>
+                                <label for="terms-agreement" class="text-sm text-gray-700">
+                                    I agree to the <a href="#" class="text-blue-600 hover:text-blue-700">Terms and Conditions</a> and <a href="#" class="text-blue-600 hover:text-blue-700">Privacy Policy</a>
+                                </label>
+                            </div>
+                            
+                            <div class="flex items-start">
+                                <input type="checkbox" id="credit-check-agreement" class="mt-1 mr-3" required>
+                                <label for="credit-check-agreement" class="text-sm text-gray-700">
+                                    I authorize Ideal Finance to perform a credit check and verify my information
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <div class="flex justify-between mt-8">
+                            <button id="prev-step-3" class="bg-gray-300 text-gray-700 px-8 py-2 rounded-lg font-semibold hover:bg-gray-400">
+                                Previous
+                            </button>
+                            <button id="submit-loan" class="btn-primary text-white px-8 py-2 rounded-lg font-semibold">
+                                Submit Application
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Modal -->
+        <div id="payment-modal" class="fixed inset-0 bg-black bg-opacity-50 z-50 hidden flex items-center justify-center p-4">
+            <div class="bg-white rounded-2xl max-w-md w-full">
+                <div class="p-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-2xl font-display font-bold text-gray-900">Make Payment</h2>
+                        <button id="close-payment-modal" class="text-gray-400 hover:text-gray-600">
+                            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Select Loan</label>
+                            <select id="payment-loan-select" class="form-input w-full" required>
+                                <option value="">Select a loan</option>
+                            </select>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Amount (ZMW)</label>
+                            <input type="number" id="payment-amount" class="form-input w-full" placeholder="Enter amount" required>
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-2">Payment Method</label>
+                            <select id="payment-method" class="form-input w-full" required>
+                                <option value="">Select method</option>
+                                <option value="mobile-money">Mobile Money</option>
+                                <option value="bank-transfer">Bank Transfer</option>
+                                <option value="card">Credit/Debit Card</option>
+                                <option value="cash">Cash Deposit</option>
+                            </select>
+                        </div>
+                        
+                        <button id="submit-payment" class="w-full btn-primary text-white py-3 rounded-lg font-semibold">
+                            Process Payment
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="portal.js"></script>
+</body>
+</html>

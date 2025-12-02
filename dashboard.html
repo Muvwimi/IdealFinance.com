@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Management Dashboard - Ideal Finance</title>
+    <meta name="description" content="Comprehensive management dashboard for Ideal Finance business analytics, client management, and performance monitoring.">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Core Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.1/anime.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/echarts/5.4.3/echarts.min.js"></script>
+    
+    <style>
+        :root {
+            --primary-blue: #1e3a8a;
+            --bright-blue: #3b82f6;
+            --light-gray: #f8fafc;
+            --medium-gray: #64748b;
+            --success-green: #10b981;
+            --warning-amber: #f59e0b;
+            --error-red: #ef4444;
+        }
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--light-gray);
+        }
+        
+        .font-display {
+            font-family: 'Playfair Display', serif;
+        }
+        
+        .dashboard-container {
+            background: linear-gradient(135deg, var(--primary-blue) 0%, var(--bright-blue) 100%);
+            min-height: 100vh;
+        }
+        
+        .dashboard-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            transition: all 0.3s ease;
+        }
+        
+        .dashboard-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .metric-card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+            transition: all 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-container {
+            height: 300px;
+            width: 100%;
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #d1fae5;
+            color: #059669;
+        }
+        
+        .status-pending {
+            background: #fef3c7;
+            color: #d97706;
+        }
+        
+        .status-overdue {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+        
+        .status-completed {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-blue), var(--bright-blue));
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(59, 130, 246, 0.3);
+        }
+        
+        .sidebar {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+            height: calc(100vh - 120px);
+            position: sticky;
+            top: 100px;
+        }
+        
+        .nav-item {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin: 4px 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+        }
+        
+        .nav-item:hover {
+            background: #f1f5f9;
+            color: var(--bright-blue);
+        }
+        
+        .nav-item.active {
+            background: var(--bright-blue);
+            color: white;
+        }
+        
+        .nav-item.active:hover {
+            background: var(--primary-blue);
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .data-table th,
+        .data-table td {
+            padding: 12px 16px;
+            text-align: left;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        
+        .data-table th {
+            background: #f8fafc;
+            font-weight: 600;
+            color: #374151;
+        }
+        
+        .data-table tr:hover {
+            background: #f8fafc;
+        }
+        
+        .filter-section {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+            border: 1px solid #e2e8f0;
+        }
+        
+        .form-input {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 8px 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .form-input:focus {
+            border-color: var(--bright-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm fixed w-full top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-16">
+                <div class="flex items-center">
+                    <img src="resources/logo.png" alt="Ideal Finance" class="h-10 w-auto">
+                    <span class="ml-3 text-xl font-display font-semibold text-gray-900">Ideal Finance</span>
+                </div>
+                
+                <div class="hidden md:flex items-center space-x-8">
+                    <span class="text-gray-700 font-medium">Management Dashboard</span>
+                    <a href="index.html" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Home</a>
+                    <a href="#" id="logout-btn" class="text-gray-700 hover:text-blue-600 font-medium transition-colors">Logout</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Container -->
+    <div class="dashboard-container pt-16">
+        <div class="min-h-screen p-6">
+            <div class="max-w-7xl mx-auto">
+                <!-- Header -->
+                <div class="mb-8">
+                    <h1 class="text-3xl font-display font-bold text-white mb-2">Management Dashboard</h1>
+                    <p class="text-blue-100">Monitor business performance and manage operations</p>
+                </div>
+
+                <!-- Key Metrics -->
+                <div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="metric-card text-center">
+                        <div class="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-1" id="total-loans">ZMW 0</h3>
+                        <p class="text-gray-600 text-sm">Total Loan Portfolio</p>
+                        <div class="mt-2">
+                            <span class="text-green-600 text-sm font-medium">+12.5% from last month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card text-center">
+                        <div class="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-1" id="total-clients">0</h3>
+                        <p class="text-gray-600 text-sm">Active Clients</p>
+                        <div class="mt-2">
+                            <span class="text-green-600 text-sm font-medium">+8 from last month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card text-center">
+                        <div class="w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-1" id="repayment-rate">0%</h3>
+                        <p class="text-gray-600 text-sm">Repayment Rate</p>
+                        <div class="mt-2">
+                            <span class="text-green-600 text-sm font-medium">+2.1% from last month</span>
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card text-center">
+                        <div class="w-16 h-16 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <svg class="w-8 h-8 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path>
+                            </svg>
+                        </div>
+                        <h3 class="text-2xl font-bold text-gray-900 mb-1" id="monthly-growth">0%</h3>
+                        <p class="text-gray-600 text-sm">Monthly Growth</p>
+                        <div class="mt-2">
+                            <span class="text-green-600 text-sm font-medium">Above target</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Charts Section -->
+                <div class="grid lg:grid-cols-2 gap-8 mb-8">
+                    <!-- Loan Portfolio Chart -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Loan Portfolio Overview</h3>
+                        <div id="portfolio-chart" class="chart-container"></div>
+                    </div>
+                    
+                    <!-- Monthly Performance Chart -->
+                    <div class="dashboard-card p-6">
+                        <h3 class="text-xl font-semibold text-gray-900 mb-4">Monthly Loan Applications</h3>
+                        <div id="performance-chart" class="chart-container"></div>
+                    </div>
+                </div>
+
+                <!-- Client Management Section -->
+                <div class="dashboard-card p-6 mb-8">
+                    <div class="flex justify-between items-center mb-6">
+                        <h3 class="text-xl font-semibold text-gray-900">Client Management</h3>
+                        <button class="btn-primary text-white px-4 py-2 rounded-lg font-medium">
+                            Add New Client
+                        </button>
+                    </div>
+                    
+                    <!-- Filters -->
+                    <div class="filter-section">
+                        <div class="grid md:grid-cols-4 gap-4">
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Search</label>
+                                <input type="text" id="client-search" class="form-input w-full" placeholder="Search clients...">
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Status</label>
+                                <select id="client-status-filter" class="form-input w-full">
+                                    <option value="">All Status</option>
+                                    <option value="active">Active</option>
+                                    <option value="pending">Pending</option>
+                                    <option value="overdue">Overdue</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium text-gray-700 mb-2">Loan Type</label>
+                                <select id="loan-type-filter" class="form-input w-full">
+                                    <option value="">All Types</option>
+                                    <option value="income-generation">Income Generation</option>
+                                    <option value="group">Group Loan</option>
+                                    <option value="agricultural">Agricultural</option>
+                                    <option value="emergency">Emergency</option>
+                                </select>
+                            </div>
+                            <div class="flex items-end">
+                                <button id="apply-filters" class="btn-primary text-white px-4 py-2 rounded-lg font-medium w-full">
+                                    Apply Filters
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Client Table -->
+                    <div class="overflow-x-auto">
+                        <table class="data-table">
+                            <thead>
+                                <tr>
+                                    <th>Client ID</th>
+                                    <th>Name</th>
+                                    <th>Email</th>
+                                    <th>Loan Amount</th>
+                                    <th>Status</th>
+                                    <th>Last Payment</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clients-table-body">
+                                <!-- Client data will be populated here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Risk Assessment -->
+                <div class="dashboard-card p-6 mb-8">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Risk Assessment Dashboard</h3>
+                    
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl font-bold text-green-600">85</span>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 mb-2">Portfolio Health Score</h4>
+                            <p class="text-sm text-gray-600">Overall portfolio risk assessment</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl font-bold text-yellow-600">12</span>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 mb-2">High Risk Loans</h4>
+                            <p class="text-sm text-gray-600">Loans requiring attention</p>
+                        </div>
+                        
+                        <div class="text-center">
+                            <div class="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <span class="text-2xl font-bold text-red-600">3</span>
+                            </div>
+                            <h4 class="font-semibold text-gray-900 mb-2">Overdue Accounts</h4>
+                            <p class="text-sm text-gray-600">Immediate action required</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="dashboard-card p-6">
+                    <h3 class="text-xl font-semibold text-gray-900 mb-6">Recent Activity</h3>
+                    <div id="recent-activity" class="space-y-4">
+                        <!-- Activity items will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="dashboard.js"></script>
+</body>
+</html>
